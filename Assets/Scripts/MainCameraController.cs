@@ -13,6 +13,7 @@ public class MainCameraController : MonoBehaviour
     public GameObject directionalLight;
     public GameObject boys;
     public GameObject boysShadow;
+    public GameObject background;
 
     // Start is called before the first frame update
     void Start()
@@ -27,16 +28,16 @@ public class MainCameraController : MonoBehaviour
     void Update()
     {
         if (timer < time) {
-            m_OrthographicCamera.transform.position += Vector3.up * 0.007f;
-            m_OrthographicCamera.orthographicSize -= .008f;
             timer += Time.deltaTime;
-            if (timer > 5f) {
+            var newPos = Mathf.Lerp(-5.0f, -.5f, timer/time);
+            var newScale = Mathf.Lerp(1.0f, .5f, timer/time);
+            background.transform.localScale = new Vector3(newScale, newScale, 1.0f);
+            background.transform.position = new Vector3(0f, newPos, 0f);
+            if (timer > 5.5f) {
                 boys.SetActive(true);
-                boysShadow.SetActive(true);
             }
         } else if (timer >= time) {
             StartCoroutine(FadeTitleAndLight(title.GetComponent<TextMeshPro>(), 2f));
-            // StartCoroutine(RotateOverTime(pivotPoint.transform, pivotPointNewTransform.transform.rotation, 10f));
         }
     }
 
