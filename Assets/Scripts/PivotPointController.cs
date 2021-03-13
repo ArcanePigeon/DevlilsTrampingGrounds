@@ -15,6 +15,8 @@ public class PivotPointController : MonoBehaviour
     public GameObject dustinTalking;
     public GameObject mikeTalking;
     public GameObject jimmyTalking;
+    public GameObject directionalLight;
+    public GameObject devil;
 
     public GameObject world;
     public GameObject worldShadow;
@@ -42,27 +44,49 @@ public class PivotPointController : MonoBehaviour
     
     void  Update ()
     {
-        if (Input.GetKeyDown(KeyCode.D)) {
-            boys.SetActive(false);
-            dustinTalking.SetActive(true);
-        } else if (Input.GetKeyDown(KeyCode.M)) {
-            boys.SetActive(false);
-            mikeTalking.SetActive(true);
-        } else if (Input.GetKeyDown(KeyCode.J)) {
-            boys.SetActive(false);
-            jimmyTalking.SetActive(true);
-        }
+        // Key Key
+        // Rotate to Empty Scene : 1
+        // Devil Appears : 2
+        // Devil Disappears : 3
+        // Throw Tennis Ball : 4
+        // Dog Rotation : 5
+        // Rotate to Boys : 6
+        // Lightning Effect : 7
 
-        if (Input.GetKeyUp(KeyCode.D)) {
-            boys.SetActive(true);
-            dustinTalking.SetActive(false);
+        // Mike Talking : M
+        // Dustin Talking : D
+        // Jimmy Talking : J
+
+        if (Input.GetKeyDown(KeyCode.D)) {
+            UpdateSprite(boys, dustinTalking);
+        } else if (Input.GetKeyDown(KeyCode.M)) {
+            UpdateSprite(boys, mikeTalking);
+        } else if (Input.GetKeyDown(KeyCode.J)) {
+            UpdateSprite(boys, jimmyTalking);
+        } else if (Input.GetKeyUp(KeyCode.D)) {
+            UpdateSprite(dustinTalking, boys);
         } else if (Input.GetKeyUp(KeyCode.M)) {
-            boys.SetActive(true);
-            mikeTalking.SetActive(false);
+            UpdateSprite(mikeTalking, boys);
         } else if (Input.GetKeyUp(KeyCode.J)) {
-            boys.SetActive(true);
-            jimmyTalking.SetActive(false);
+            UpdateSprite(jimmyTalking, boys);
+        } else if (Input.GetKeyDown(KeyCode.Q)) {
+            StopAllCoroutines();
+            StartCoroutine(QuarterSpin (10f));
+        } else if (Input.GetKeyDown(KeyCode.W)) {
+            StopAllCoroutines();
+            StartCoroutine(ThrowBall());
+        } else if (Input.GetKeyDown(KeyCode.E)) {
+            StopAllCoroutines();
+            StartCoroutine(RotateDog(8f));
+        } else if (Input.GetKeyDown(KeyCode.R)) {
+            StopAllCoroutines();
+            StartCoroutine(ShowDevil(.25f));
         }
+    }
+
+    void UpdateSprite(GameObject oldSprite, GameObject newSprite) {
+        oldSprite.SetActive(false);
+        newSprite.SetActive(true);
     }
     
     IEnumerator SpinTheWheel (float time, float maxAngle)
@@ -79,25 +103,7 @@ public class PivotPointController : MonoBehaviour
             timer += Time.deltaTime;
             yield return 0;
         }
-        StartCoroutine(SwitchToBoyView(10f));
     } 
-
-    IEnumerator SwitchToBoyView (float time)
-    {
-        boyCam.Priority = 5;
-        // float timer = 0.0f;
-        // while (timer < time) {
-        //     timer += Time.deltaTime;
-        //     var newScale = Mathf.Lerp(.5f, .25f, timer/time);
-        //     background.transform.localScale = new Vector3(newScale, newScale, 1.0f);
-        // }
-
-        yield return new WaitForSeconds(10f);
-
-        closerCam.Priority = 6;
-        StartCoroutine(QuarterSpin (10f));
-    }
-
 
     IEnumerator QuarterSpin (float time)
     {
@@ -118,26 +124,43 @@ public class PivotPointController : MonoBehaviour
                 worldShadow.SetActive(false);
                 worldNoTent.SetActive(true);
                 worldNoTentShadow.SetActive(true);
+                devil.SetActive(false);
+                ball.SetActive(false);
+                dog.SetActive(false);
             }
             yield return 0;
         }
-        dog.SetActive(true);
-        StartCoroutine(ThrowBall());
+    }
+
+    IEnumerator ShowDevil(float duration) {
+        devil.SetActive(true);
+        Light backgroundLight = directionalLight.GetComponent<Light>();
+        SpriteRenderer devilSprite = devil.GetComponent<SpriteRenderer>();
+        Color startColorDevil = devilSprite.color;
+        Color endColorDevil = new Color(startColorDevil.r, startColorDevil.g, startColorDevil.b, 1);
+        Color startColorLight = backgroundLight.color;
+        Color endColorLight = new Color(108/255f, 5/255f, 0);
+        float time = 0;
+        while (time < duration) {
+            time += Time.deltaTime;
+            backgroundLight.color = Color.Lerp(startColorLight, endColorLight, time/duration);
+            devilSprite.color = Color.Lerp(startColorDevil, endColorDevil, time/duration);
+            yield return null;
+        }
     }
 
     IEnumerator ThrowBall ()
     {
         ball.SetActive(true);
-
         Rigidbody rb = ball.GetComponent<Rigidbody>();
         Vector3 movement = new Vector3(-2.2f, -0.30f, 0.0f);
         rb.AddForce(movement * 30f);
-        yield return new WaitForSeconds(2f);
-        StartCoroutine(RotateDog(8f));
+        yield return null;
     }
 
     IEnumerator RotateDog (float time)
     {
+        dog.SetActive(true);
         float maxAngle = 10f;
         float timer = 0.0f;        
         float startAngle = -100;        
